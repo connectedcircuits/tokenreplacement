@@ -1,0 +1,36 @@
+trigger:
+- master
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  logicAppOneParamFile: 'LogicAppOne\LogicApp.parameters.json'
+  logicAppTwoParamFile: 'LogicAppTwo\LogicApp.parameters.json'
+  nonProdAzureServiceConnection: '<your DevOps service connection name>'
+  primaryLocation: 'australiaeast'
+  buildNumber: $(Build.BuildNumber)
+  sitResourceGroup: '<your resource group name>'
+  sitSubscriptionId: '<your azure subscription Id>'
+
+steps:
+- checkout: self
+
+- template: Templates\token-replacement.yml
+  parameters:
+    tokenFileList:
+      - ${{ variables.logicAppOneParamFile }}
+      - ${{ variables.logicAppTwoParamFile }}
+    tokenName: '%_buildNumber_%'
+    replacementValue:  ${{ variables.buildNumber }}
+
+- template: Templates\deploy-logicapp-projects.yml
+  parameters:   
+    location: ${{ variables.primaryLocation }}
+    resourceGroup: ${{ variables.sitResourceGroup }}
+    subscriptionId: ${{ variables.sitSubscriptionId }}
+    serviceConnectionName: ${{ variables.nonProdAzureServiceConnection }}
+    deployMode: 'Incremental'
+    projectList:
+      - 'LogicAppOne'
+      - 'LogicAppTwo'

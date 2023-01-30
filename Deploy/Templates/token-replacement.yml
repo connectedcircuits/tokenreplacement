@@ -1,0 +1,18 @@
+parameters:
+  - name: tokenFileList 
+    displayName: "List of text files to search"
+    type: object
+    default: []
+  - name: tokenName
+    displayName: "Name of the token to find in the text file"
+    type: string
+  - name: replacementValue
+    displayName: "The token replacement value"
+    type: string
+
+# For each file in the list
+steps:
+  - ${{ each file in parameters.tokenFileList }}:        
+     - powershell: Deploy/PSScripts/replaceToken.ps1 ${{ file }} ${{ parameters.tokenName }}  ${{ parameters.replacementValue }}
+       displayName: 'Token replacement on ${{ file }} file' 
+      
